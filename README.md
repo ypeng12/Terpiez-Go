@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/95a041d4-03e0-46de-8369-249962996388)![image](https://github.com/user-attachments/assets/885e7866-cb77-4c9a-a15c-af659a956d83)# Terpiez AR Game
+# Terpiez AR Game
 
 ## Overview
 
