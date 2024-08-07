@@ -1,4 +1,4 @@
-# Terpiez AR Game
+![image](https://github.com/user-attachments/assets/95a041d4-03e0-46de-8369-249962996388)![image](https://github.com/user-attachments/assets/885e7866-cb77-4c9a-a15c-af659a956d83)# Terpiez AR Game
 
 ## Overview
 
@@ -83,6 +83,7 @@ Terpiez is an augmented reality (AR) game where players search for and capture v
    - Persists user preferences for sound settings.
 
 ## Demo Videos
+![屏幕截图 2024-08-06 233910](https://github.com/user-attachments/assets/4526a629-4ea0-4efc-9b25-926364a5b295)
 
 - [Phase 4 Demo](movie/phase4.mov)
 - [Phase 5 Demo](movie/phase5.mov)
