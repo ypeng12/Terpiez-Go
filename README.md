@@ -85,9 +85,9 @@ Terpiez is an augmented reality (AR) game where players search for and capture v
 ## Demo Videos
 ![屏幕截图 2024-08-06 233910](https://github.com/user-attachments/assets/4526a629-4ea0-4efc-9b25-926364a5b295)
 
-- [Phase 4 Demo](movie/phase4.mov)
-- [Phase 5 Demo](movie/phase5.mov)
-- [Phase 6 Demo](movie/phase6.mov)
+- [Phase 4 Demo](https://youtu.be/QdIt43obGeo)
+- [Phase 5 Demo](https://youtu.be/O5EkdZ10uiY)
+- [Phase 6 Demo](https://www.youtube.com/watch?v=YLFv0_TplO4)
 
 ## Credits
 
