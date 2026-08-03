@@ -325,18 +325,20 @@ const AppContent: React.FC = () => {
     });
   };
 
-  // Scatter Spawns across wide map function
+  // Scatter Spawns tightly around player location function
   const handleScatterSpawns = () => {
     setTerpiezList((prev) =>
       prev.map((t) => {
-        const latOffset = (Math.random() - 0.5) * 0.025;
-        const lngOffset = (Math.random() - 0.5) * 0.035;
+        // Tight offset within ~100m capture radius around current user position
+        const latOffset = (Math.random() - 0.5) * 0.0016;
+        const lngOffset = (Math.random() - 0.5) * 0.0022;
         return {
           ...t,
+          isCaptured: false,
           location: {
             latitude: parseFloat((userLat + latOffset).toFixed(5)),
             longitude: parseFloat((userLng + lngOffset).toFixed(5)),
-            placeName: `${t.location.placeName} (Wandering)`,
+            placeName: `${t.name} (Nearby Wild Spawn)`,
           },
         };
       })
@@ -344,8 +346,8 @@ const AppContent: React.FC = () => {
 
     addToast({
       type: 'info',
-      title: '✨ Wild Terpiez Scattered!',
-      message: 'Wild creatures have dispersed across surrounding H3 Spatial Grid cells.',
+      title: '✨ 20 Wild Terpiez Spawned Nearby!',
+      message: 'Multiple wild Terpiez have appeared in immediate capture range around your player position!',
     });
   };
 
