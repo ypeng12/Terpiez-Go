@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { INITIAL_TERPIEZ } from './data/mockTerpiez';
 import { Terpiez, TerpiezType } from './types/terpiez';
 import { generateForYouFeed, sendTelemetryEvent, calculateDistanceMeters } from './services/discoveryEngine';
@@ -13,7 +13,7 @@ import { ToastProvider, useToast } from './components/ui/Toast';
 import { DesignSystemPage } from './pages/DesignSystemPage';
 import { PerformanceDashboard } from './components/dashboard/PerformanceDashboard';
 import confetti from 'canvas-confetti';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
 import {
@@ -24,17 +24,52 @@ import {
   Activity,
   Sparkles,
   Trophy,
+  Gamepad2,
+  Navigation,
+  Shuffle,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Zap,
 } from 'lucide-react';
 import './styles/global.css';
 import './App.css';
 
-// Fix Leaflet default marker icon bug in Webpack/Vite
-const customMarkerIcon = new L.Icon({
+// Custom Leaflet Markers for Player & Terpiez
+const playerMarkerIcon = new L.DivIcon({
+  className: 'player-marker-pin',
+  html: `<div style="
+    background: #6366f1;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  ">📍</div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
+const terpiezMarkerIcon = new L.Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
+
+// Helper component to auto-pan map when player moves
+const RecenterMap: React.FC<{ center: [number, number] }> = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.panTo(center);
+  }, [center, map]);
+  return null;
+};
 
 const AppContent: React.FC = () => {
   const { addToast } = useToast();
@@ -45,9 +80,156 @@ const AppContent: React.FC = () => {
   const [selectedType, setSelectedType] = useState<TerpiezType | 'All'>('All');
   const [selectedTerpiezModal, setSelectedTerpiezModal] = useState<Terpiez | null>(null);
 
-  // User simulated state
-  const userLat = 38.9860;
-  const userLng = -76.9420;
+  // Dynamic Player GPS Coordinates State (McKeldin Fountain baseline)
+  const [userLat, setUserLat] = useState(38.9860);
+  const [userLng, setUserLng] = useState(-76.9420);
+  const [gamepadConnected, setGamepadConnected] = useState(false);
+  const [gamepadName, setGamepadName] = useState('');
+
+  // Movement step size (~25-30 meters per step)
+  const STEP_LAT = 0.0003;
+  const STEP_LNG = 0.0004;
+
+  // Move player helper
+  const movePlayer = useCallback((direction: 'N' | 'S' | 'E' | 'W') => {
+    setUserLat((prevLat) => {
+      let nextLat = prevLat;
+      if (direction === 'N') nextLat += STEP_LAT;
+      if (direction === 'S') nextLat -= STEP_LAT;
+      return parseFloat(nextLat.toFixed(5));
+    });
+
+    setUserLng((prevLng) => {
+      let nextLng = prevLng;
+      if (direction === 'E') nextLng += STEP_LNG;
+      if (direction === 'W') nextLng -= STEP_LNG;
+      return parseFloat(nextLng.toFixed(5));
+    });
+  }, []);
+
+  // Keyboard Movement Listener (WASD / Arrow Keys)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeNav !== 'nearby_map') return;
+
+      const key = e.key.toLowerCase();
+      if (key === 'w' || key === 'arrowup') {
+        e.preventDefault();
+        movePlayer('N');
+      } else if (key === 's' || key === 'arrowdown') {
+        e.preventDefault();
+        movePlayer('S');
+      } else if (key === 'a' || key === 'arrowleft') {
+        e.preventDefault();
+        movePlayer('W');
+      } else if (key === 'd' || key === 'arrowright') {
+        e.preventDefault();
+        movePlayer('E');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeNav, movePlayer]);
+
+  // Gamepad API Polling (Xbox / PlayStation controller support)
+  useEffect(() => {
+    let animId: number;
+
+    const handleGamepadConnected = (e: GamepadEvent) => {
+      setGamepadConnected(true);
+      setGamepadName(e.gamepad.id);
+      addToast({
+        type: 'success',
+        title: '🎮 Controller Connected!',
+        message: `Connected: ${e.gamepad.id}. Use Left Joystick / D-Pad to move player.`,
+      });
+    };
+
+    const handleGamepadDisconnected = () => {
+      setGamepadConnected(false);
+      setGamepadName('');
+      addToast({
+        type: 'info',
+        title: 'Controller Disconnected',
+        message: 'Switched back to WASD Keyboard controls.',
+      });
+    };
+
+    window.addEventListener('gamepadconnected', handleGamepadConnected);
+    window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
+
+    let lastMoveTime = 0;
+    const pollGamepad = (time: number) => {
+      const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+      const gp = gamepads[0]; // first active controller
+
+      if (gp && activeNav === 'nearby_map') {
+        if (!gamepadConnected) {
+          setGamepadConnected(true);
+          setGamepadName(gp.id);
+        }
+
+        // Throttle movement to ~200ms
+        if (time - lastMoveTime > 200) {
+          const axisX = gp.axes[0] || 0;
+          const axisY = gp.axes[1] || 0;
+          const dpadUp = gp.buttons[12]?.pressed;
+          const dpadDown = gp.buttons[13]?.pressed;
+          const dpadLeft = gp.buttons[14]?.pressed;
+          const dpadRight = gp.buttons[15]?.pressed;
+
+          if (axisY < -0.4 || dpadUp) {
+            movePlayer('N');
+            lastMoveTime = time;
+          } else if (axisY > 0.4 || dpadDown) {
+            movePlayer('S');
+            lastMoveTime = time;
+          } else if (axisX < -0.4 || dpadLeft) {
+            movePlayer('W');
+            lastMoveTime = time;
+          } else if (axisX > 0.4 || dpadRight) {
+            movePlayer('E');
+            lastMoveTime = time;
+          }
+        }
+      }
+      animId = requestAnimationFrame(pollGamepad);
+    };
+
+    animId = requestAnimationFrame(pollGamepad);
+
+    return () => {
+      window.removeEventListener('gamepadconnected', handleGamepadConnected);
+      window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
+      cancelAnimationFrame(animId);
+    };
+  }, [activeNav, gamepadConnected, movePlayer, addToast]);
+
+  // Scatter Spawns across wide map function
+  const handleScatterSpawns = () => {
+    setTerpiezList((prev) =>
+      prev.map((t) => {
+        // Random offset within ~1.5 km radius around current user position
+        const latOffset = (Math.random() - 0.5) * 0.025;
+        const lngOffset = (Math.random() - 0.5) * 0.035;
+        return {
+          ...t,
+          location: {
+            latitude: parseFloat((userLat + latOffset).toFixed(5)),
+            longitude: parseFloat((userLng + lngOffset).toFixed(5)),
+            placeName: `${t.location.placeName} (Wandering)`,
+          },
+        };
+      })
+    );
+
+    addToast({
+      type: 'info',
+      title: '✨ Wild Terpiez Scattered!',
+      message: 'Wild creatures have dispersed across the surrounding map and campus sectors.',
+    });
+  };
 
   // Compute user captured type count map
   const capturedTypeCounts = useMemo(() => {
@@ -63,18 +245,23 @@ const AppContent: React.FC = () => {
   // Discovery Feeds Generation
   const forYouFeedItems = useMemo(() => {
     return generateForYouFeed(terpiezList, capturedTypeCounts, userLat, userLng);
-  }, [terpiezList, capturedTypeCounts]);
+  }, [terpiezList, capturedTypeCounts, userLat, userLng]);
 
   const nearbyFeedItems = useMemo(() => {
     return terpiezList.map((t) => ({
       terpiez: t,
       distanceMeters: calculateDistanceMeters(userLat, userLng, t.location.latitude, t.location.longitude),
     })).sort((a, b) => a.distanceMeters - b.distanceMeters);
-  }, [terpiezList]);
+  }, [terpiezList, userLat, userLng]);
 
   const trendingFeedItems = useMemo(() => {
     return [...terpiezList].sort((a, b) => (b.attack + b.defense) - (a.attack + a.defense));
   }, [terpiezList]);
+
+  // Check if any uncaught Terpiez is within 50 meters
+  const inRangeTerpiez = useMemo(() => {
+    return nearbyFeedItems.find((item) => !item.terpiez.isCaptured && item.distanceMeters <= 80);
+  }, [nearbyFeedItems]);
 
   // Capture Handler with confetti & telemetry event
   const handleCapture = (terpiez: Terpiez) => {
@@ -84,8 +271,8 @@ const AppContent: React.FC = () => {
 
     // Fire Confetti
     confetti({
-      particleCount: 100,
-      spread: 70,
+      particleCount: 120,
+      spread: 80,
       origin: { y: 0.6 },
     });
 
@@ -157,7 +344,7 @@ const AppContent: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="app-main-content">
-        {/* 1. DISCOVERY FEEDS TAB (Twitch Discovery Focus) */}
+        {/* 1. DISCOVERY FEEDS TAB */}
         {activeNav === 'discovery' && (
           <div className="discovery-section">
             {/* Sub-tabs: For You, Nearby, Trending */}
@@ -177,7 +364,6 @@ const AppContent: React.FC = () => {
             {/* FOR YOU FEED */}
             {discoverySubTab === 'for_you' && (
               <div className="feed-container">
-                {/* Hero Recommendation Item */}
                 {forYouFeedItems.length > 0 && (
                   <div className="hero-feed-wrapper animate-fade-in">
                     <DiscoveryCard
@@ -188,7 +374,6 @@ const AppContent: React.FC = () => {
                   </div>
                 )}
 
-                {/* Secondary Recommendations Grid */}
                 <h2 className="feed-section-heading">More Recommended Species</h2>
                 <div className="terpiez-cards-grid">
                   {forYouFeedItems.slice(1).map((item) => (
@@ -248,53 +433,112 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {/* 2. NEARBY MAP VIEW */}
+        {/* 2. NEARBY MAP VIEW (With Keyboard WASD / Gamepad / D-Pad Movement) */}
         {activeNav === 'nearby_map' && (
           <div className="map-view-container glass-panel">
             <div className="map-header">
-              <h2><MapPin color="var(--accent-cyan)" /> Terpiez Spatial Map View</h2>
-              <p>Real-time GPS coordinate mapping & campus spawn locations</p>
+              <div className="map-title-box">
+                <h2><MapPin color="var(--accent-cyan)" /> Terpiez Spatial Map & Gamepad Engine</h2>
+                <p>Coordinates: Lat {userLat.toFixed(4)}, Lng {userLng.toFixed(4)} | Use WASD / Arrow Keys or Xbox Controller to explore!</p>
+              </div>
+
+              <div className="map-controls-toolbar">
+                <div className={`gamepad-status-badge ${gamepadConnected ? 'connected' : ''}`}>
+                  <Gamepad2 size={16} />
+                  <span>{gamepadConnected ? `Connected: ${gamepadName.slice(0, 18)}...` : '⌨️ WASD / Gamepad Ready'}</span>
+                </div>
+
+                <Button variant="secondary" size="sm" onClick={handleScatterSpawns}>
+                  <Shuffle size={14} /> Scatter Spawns
+                </Button>
+              </div>
             </div>
+
             <div className="leaflet-wrapper">
+              {/* Proximity Banner Alert if Terpiez in range */}
+              {inRangeTerpiez && (
+                <div className="map-proximity-alert animate-glow">
+                  <Zap size={18} />
+                  <span>Wild #{inRangeTerpiez.terpiez.speciesNumber} {inRangeTerpiez.terpiez.name} is in Capture Range! ({Math.round(inRangeTerpiez.distanceMeters)}m away)</span>
+                  <Button variant="primary" size="sm" onClick={() => handleCapture(inRangeTerpiez.terpiez)}>
+                    Capture Now
+                  </Button>
+                </div>
+              )}
+
               <MapContainer
                 center={[userLat, userLng]}
-                zoom={15}
-                scrollWheelZoom={false}
-                style={{ height: '550px', width: '100%', borderRadius: 'var(--radius-xl)' }}
+                zoom={14}
+                scrollWheelZoom={true}
+                style={{ height: '580px', width: '100%', borderRadius: 'var(--radius-xl)' }}
               >
+                <RecenterMap center={[userLat, userLng]} />
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {/* User Pin */}
-                <Marker position={[userLat, userLng]} icon={customMarkerIcon}>
-                  <Popup>📍 You are here (College Park Campus)</Popup>
+
+                {/* Player Dynamic Location Pin */}
+                <Marker position={[userLat, userLng]} icon={playerMarkerIcon}>
+                  <Popup>
+                    <div className="map-popup">
+                      <strong>📍 Player Position</strong>
+                      <p>Lat: {userLat.toFixed(4)}, Lng: {userLng.toFixed(4)}</p>
+                    </div>
+                  </Popup>
                 </Marker>
 
-                {/* Terpiez Spawn Pins */}
-                {terpiezList.map((t) => (
-                  <Marker
-                    key={t.id}
-                    position={[t.location.latitude, t.location.longitude]}
-                    icon={customMarkerIcon}
-                  >
-                    <Popup>
-                      <div className="map-popup">
-                        <strong>#{t.speciesNumber} {t.name}</strong> ({t.rarity})
-                        <p>{t.location.placeName}</p>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          disabled={t.isCaptured}
-                          onClick={() => handleCapture(t)}
-                        >
-                          {t.isCaptured ? 'Captured' : 'Capture'}
-                        </Button>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
+                {/* Dispersed Terpiez Markers */}
+                {terpiezList.map((t) => {
+                  const distMeters = calculateDistanceMeters(userLat, userLng, t.location.latitude, t.location.longitude);
+                  const inRange = distMeters <= 80;
+
+                  return (
+                    <Marker
+                      key={t.id}
+                      position={[t.location.latitude, t.location.longitude]}
+                      icon={terpiezMarkerIcon}
+                    >
+                      <Popup>
+                        <div className="map-popup">
+                          <strong>#{t.speciesNumber} {t.name}</strong> ({t.rarity})
+                          <p>{t.location.placeName}</p>
+                          <p style={{ fontSize: '11px', color: '#64748b' }}>Distance: {Math.round(distMeters)}m away</p>
+                          <Button
+                            variant={inRange ? 'primary' : 'secondary'}
+                            size="sm"
+                            disabled={t.isCaptured}
+                            onClick={() => handleCapture(t)}
+                          >
+                            {t.isCaptured ? 'Captured' : inRange ? '⚡ Capture (In Range!)' : 'Move Closer to Catch'}
+                          </Button>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
               </MapContainer>
+
+              {/* On-Screen D-Pad Controls for Mouse / Touch Users */}
+              <div className="map-dpad-overlay">
+                <button className="dpad-btn" title="Move North (W)" onClick={() => movePlayer('N')}>
+                  <ChevronUp size={20} />
+                </button>
+                <div className="dpad-row">
+                  <button className="dpad-btn" title="Move West (A)" onClick={() => movePlayer('W')}>
+                    <ChevronLeft size={20} />
+                  </button>
+                  <div className="dpad-btn" style={{ background: 'transparent', border: 'none', cursor: 'default' }}>
+                    <Navigation size={18} color="var(--primary-500)" />
+                  </div>
+                  <button className="dpad-btn" title="Move East (D)" onClick={() => movePlayer('E')}>
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+                <button className="dpad-btn" title="Move South (S)" onClick={() => movePlayer('S')}>
+                  <ChevronDown size={20} />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -310,6 +554,9 @@ const AppContent: React.FC = () => {
                 <FilterChip label="Fire" selected={selectedType === 'Fire'} onToggle={() => setSelectedType('Fire')} />
                 <FilterChip label="Electric" selected={selectedType === 'Electric'} onToggle={() => setSelectedType('Electric')} />
                 <FilterChip label="Grass" selected={selectedType === 'Grass'} onToggle={() => setSelectedType('Grass')} />
+                <FilterChip label="Dark" selected={selectedType === 'Dark'} onToggle={() => setSelectedType('Dark')} />
+                <FilterChip label="Cyber" selected={selectedType === 'Cyber'} onToggle={() => setSelectedType('Cyber')} />
+                <FilterChip label="Dragon" selected={selectedType === 'Dragon'} onToggle={() => setSelectedType('Dragon')} />
               </div>
             </div>
 
@@ -328,10 +575,10 @@ const AppContent: React.FC = () => {
           </div>
         )}
 
-        {/* 4. DESIGN SYSTEM TAB (Roblox Focus) */}
+        {/* 4. DESIGN SYSTEM TAB */}
         {activeNav === 'design_system' && <DesignSystemPage />}
 
-        {/* 5. GO TELEMETRY DASHBOARD TAB (Twitch Focus) */}
+        {/* 5. GO TELEMETRY DASHBOARD TAB */}
         {activeNav === 'performance' && <PerformanceDashboard />}
       </main>
 
@@ -348,6 +595,9 @@ const AppContent: React.FC = () => {
               <div>
                 <span className="rarity-tag">{selectedTerpiezModal.rarity} {selectedTerpiezModal.type} Terpiez</span>
                 <p>{selectedTerpiezModal.description}</p>
+                <p style={{ marginTop: '8px', fontSize: '12px', color: '#94a3b8' }}>
+                  Location: {selectedTerpiezModal.location.placeName} (Lat {selectedTerpiezModal.location.latitude}, Lng {selectedTerpiezModal.location.longitude})
+                </p>
               </div>
             </div>
 
