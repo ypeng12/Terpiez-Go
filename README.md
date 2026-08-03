@@ -8,99 +8,95 @@ app_port: 7860
 short_description: Terpiez-Go Roblox & Twitch Discovery Engine Web App
 ---
 
+# 🎮 Terpiez-Go 2.0: Uber H3 Spatial Grid & 3D WebGL AR Discovery Engine
 
+Welcome to **Terpiez-Go 2.0**, a state-of-the-art Location-Based Services (LBS) Augmented Reality & Recommendation Engine application inspired by *Niantic (Pokémon GO)*, *Roblox design aesthetics*, and *Twitch discovery feeds*. 
 
-# Terpiez AR Game
+Rebuilt from the ground up using **React 18, Vite, TypeScript, Three.js, Uber H3 Spatial Indexing, and Go**, Terpiez-Go 2.0 seamlessly combines spatial computing, real-world real-time weather modifiers, 3D WebGL rendering, and multi-controller input into a unified high-performance web platform.
 
-## Overview
+---
 
-Terpiez is an augmented reality (AR) game where players search for and capture virtual creatures called Terpiez hidden around campus. The game features statistics tracking, a map to locate Terpiez, a list of captured creatures, and detailed views of each Terpiez.
+## 🚀 Key Systems & Architectural Breakthroughs
 
-## Application Features
+### 1. ⬡ Uber H3 Hexagonal Spatial Indexing Grid (Niantic Architecture)
+- **$O(1)$ Spatial Lookup**: Integrated Uber's official `h3-js` library at **Resolution 9 (~100m hex cells)** to map player GPS coordinates and monster spawns to hexagonal grid cells.
+- **K-Ring Neighbor Disks**: Calculates surrounding 7-cell hexagonal clusters in real time for ultra-fast spatial proximity detection.
+- **Interactive Spatial Inspector**: Features a real-time overlay panel (`Uber H3 Spatial Grid Inspector`) displaying current H3 Cell IDs (e.g. `892a1008007ffff`), cell resolution, and centroid coordinates.
 
-### Initial Application Structure
+### 2. 🧊 Three.js WebGL 3D Engine & Hologram Inspector
+- **2D / 3D Perspective Map View (`ThreeDMapView`)**: Toggle between 2D Leaflet map view and interactive Three.js 3D WebGL perspective terrain with a glowing 3D player beacon, hex-style ground grid, and floating 3D low-poly creatures.
+- **360° Holographic Monster Viewer (`ThreeDMonsterViewer`)**: Interactive modal rendering low-poly 3D geometries with metallic/wireframe materials, rotating holographic pedestal rings, point light illuminations, and floating particle FX (particle systems).
 
-1. **Title Bar and Three Tabs:**
-   - A title bar at the top of the application.
-   - Three main tabs: Statistics, Finder, and List.
+### 3. 🕹️ Gamepad API, WASD Controls & Auto-Walk Patrol
+- **Multi-Controller Input**: Native support for **WASD / Arrow Keys** and **HTML5 Gamepad API** (Xbox / PlayStation left joysticks and D-Pad controls).
+- **Auto-Walk / Patrol Engine**: Automated AI patrol mode that walks the player avatar along campus paths and H3 grid cells for hands-free monster discovery.
+- **Proximity Alerts**: Triggers real-time alerts and confetti when entering within 80 meters of wild Terpiez.
 
-2. **Statistics Tab:**
-   - Displays the number of Terpiez captured by the user.
-   - Shows the number of days the user has been playing the game.
-   - These values are initially hard-coded.
+### 4. 🌧️ Dynamic Weather & Time Spawn Modifiers
+- **Real-World Environment Modifiers**: Integrated weather engine supporting `Sunny ☀️`, `Rainy 🌧️`, `Night 🌙`, and `Thunderstorm ⚡` conditions.
+- **Stat & Encounter Boosts**: Rainy/Stormy weather boosts Water, Electric, Dark, and Cyber Terpiez encounter rates and combat stats up to **+300%**.
 
-3. **Finder Tab:**
-   - Displays a map with the user's location and the distance to the nearest Terpiez.
-   - Uses a fixed image to represent the map.
-   - The distance to the closest Terpiez is initially hard-coded.
+### 5. 👾 Real-Time Multiplayer Presence & UGC Beacon Creator
+- **Online Ghost Avatars**: Displays active online player avatars (`Player_Alex`, `Player_Maya`) moving across adjacent H3 grid cells.
+- **UGC Terpiez & Beacon Builder**: Allows players to design custom Terpiez species (name, type, rarity, stats, emoji) and deploy spatial **Beacon Signals** to attract wild spawns.
 
-4. **List Tab:**
-   - Displays the types of Terpiez the player has caught.
-   - This list is initially hard-coded with built-in icons representing the Terpiez.
-   - Clicking on an icon takes the user to a detailed view.
+### 6. ⚡ Roblox UI Design System & Twitch Recommendation Engine
+- **Design Tokens**: Custom CSS variable system featuring HSL dark themes, glassmorphism (`backdrop-filter`), micro-animations, and rarity color gradients.
+- **Multi-Feed Recommendation**: Algorithmic scoring for `For You`, `Nearby`, and `Trending` discovery feeds based on user preferences, spatial distance, and rarity.
+- **Go Telemetry Server**: High-throughput Go telemetry pipeline (`server/main.go`) logging telemetry events with real-time p50/p95/p99 latency tracking.
+- **Zero Redis Lock**: Built-in local fallback ensuring 100% uptime with zero database login blocks.
 
-5. **Details View:**
-   - Shows a larger image of the Terpiez along with its name.
-   - Initially, only the name of the Terpiez is displayed.
+---
 
-### Persistent Storage and Data Management
+## 🛠️ Technology Stack
 
-1. **User ID and Activity Tracking:**
-   - User ID and days active are stored in Shared Preferences.
-   - Connects to a Redis database to store and retrieve data.
-   - Prompts for Redis credentials on first startup and prevents further action until entered.
-   - Credentials are stored securely using `flutter_secure_storage`.
+| Layer | Technologies Used |
+| :--- | :--- |
+| **Frontend Framework** | React 18, Vite 5, TypeScript 5 |
+| **Spatial Indexing** | Uber `h3-js` (Resolution 9 Hexagonal Grid) |
+| **3D & Graphics** | Three.js (WebGL Renderer, Lighting, Particle Systems, Geometries) |
+| **Mapping & GIS** | Leaflet, React-Leaflet, OpenStreetMap |
+| **UI & Styling** | Vanilla CSS Design System (Tokens, HSL Dark Mode, Glassmorphism), Lucide React |
+| **Input Engine** | HTML5 Gamepad API (Xbox Controller), Keyboard Event Listeners |
+| **Backend & Telemetry** | Go 1.22 REST Server, Vitest Test Suite, Docker + Nginx |
 
-2. **Redis Database Interaction:**
-   - Stores data as JSON on the Redis database.
-   - Tracks Terpiez found by the user using the app's UUID.
-   - Fetches location data, Terpiez details, and images from the database.
+---
 
-3. **Map and Data Display:**
-   - Main map shows the closest un-caught Terpiez location and the user's current location.
-   - Removes caught Terpiez from the list of locations.
-   - Downloads and stores Terpiez images and species data locally.
+## ⚙️ Project Setup & Local Development
 
-4. **List and Detail Views:**
-   - List of Terpiez shows thumbnails and names.
-   - Detail view includes the name, full-sized image, stats, description, and a map of capture locations.
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **Go**: v1.20+ (optional, for backend telemetry server)
 
-### In-App Notifications and Sensor Input
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-1. **Catching Terpiez:**
-   - Displays a dialog with the Terpiez image and name upon capture.
-   - Monitors connection to the Redis database and shows notifications for connection status changes.
+### 2. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-2. **Sensor Input:**
-   - Replaces the "Catch" button with a shake detection using accelerometers.
-   - Provides visual cues when a Terpiez is in range.
+### 3. Run Production Build & Type Checking
+```bash
+npm run build
+```
 
-3. **App Icon:**
-   - Replaces the default Flutter icon with a custom icon for both Android and iOS.
+### 4. Run Vitest Unit Tests
+```bash
+npx vitest run
+```
 
-### Sounds and Notifications
+### 5. Run Go Telemetry Server (Optional)
+```bash
+go run server/main.go
+```
 
-1. **Sound Indicators:**
-   - Plays a sound when a Terpiez is caught.
-   - Plays a notification sound when within 20m of a Terpiez.
+---
 
-2. **Background Service:**
-   - Creates a background service for notifications.
-   - Communicates between the app and the background service.
-   - Tapping a notification opens the finder tab.
+## 📜 Credits & License
 
-3. **User Preferences:**
-   - Adds a Drawer with user preferences.
-   - Allows users to enable/disable sounds and clear data.
-   - Persists user preferences for sound settings.
-
-## Demo Videos
-![屏幕截图 2024-08-06 233910](https://github.com/user-attachments/assets/4526a629-4ea0-4efc-9b25-926364a5b295)
-
-- [Phase 4 Demo](https://youtu.be/QdIt43obGeo)
-- [Phase 5 Demo](https://youtu.be/O5EkdZ10uiY)
-- [Phase 6 Demo](https://www.youtube.com/watch?v=YLFv0_TplO4)
-
-## Credits
-
-All Terpiez images by Noah McMullen.
+- **Terpiez Original Concept & Art**: Created by Noah McMullen and UMD CMSC team.
+- **Terpiez-Go 2.0 Engine & Spatial Architecture**: Engineered with React, Vite, Three.js, Uber H3, and Go.
