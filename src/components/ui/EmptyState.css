@@ -1,0 +1,28 @@
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10) var(--space-6);
+  text-align: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.empty-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.empty-description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  max-width: 420px;
+}

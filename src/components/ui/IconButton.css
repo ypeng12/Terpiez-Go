@@ -1,0 +1,39 @@
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.icon-btn-sm { width: 32px; height: 32px; font-size: 14px; }
+.icon-btn-md { width: 40px; height: 40px; font-size: 18px; }
+.icon-btn-lg { width: 48px; height: 48px; font-size: 22px; }
+
+.icon-btn-ghost {
+  background: transparent;
+}
+.icon-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.icon-btn-glass {
+  background: var(--bg-glass);
+  border-color: var(--border-subtle);
+  backdrop-filter: blur(10px);
+}
+.icon-btn-glass:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-glow);
+  color: var(--text-primary);
+}
+
+.icon-btn.active {
+  background: var(--primary-500);
+  color: #ffffff;
+  box-shadow: var(--shadow-glow-primary);
+}

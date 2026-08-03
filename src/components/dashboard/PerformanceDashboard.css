@@ -1,0 +1,128 @@
+.perf-dashboard-container {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dashboard-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.dashboard-subtitle {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+.metric-icon {
+  padding: 0.6rem;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.metric-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.metric-val {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  font-family: var(--font-family-mono);
+  color: var(--text-primary);
+}
+
+.metric-tag {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+.metric-tag.success {
+  color: var(--accent-emerald);
+}
+
+.latency-table-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.section-subtitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.latency-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-xs);
+}
+
+.latency-table th, .latency-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.latency-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.mono {
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.sla-badge.pass {
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: rgba(34, 197, 94, 0.2);
+  color: var(--accent-emerald);
+  font-weight: 700;
+}

@@ -1,0 +1,175 @@
+.discovery-hero-card {
+  padding: var(--space-6);
+  border: 1px solid var(--border-glow);
+  background: linear-gradient(135deg, rgba(22, 28, 38, 0.9) 0%, rgba(30, 38, 55, 0.95) 100%);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.discovery-hero-card:hover {
+  border-color: var(--primary-500);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.25);
+}
+
+.discovery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.recommendation-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: var(--accent-cyan);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rank-badge {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--accent-amber);
+  background: rgba(245, 158, 11, 0.15);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.discovery-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr 200px;
+  gap: var(--space-6);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .discovery-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hero-avatar {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.rarity-pill {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: var(--primary-500);
+}
+.rarity-pill[data-rarity="Epic"] { background: var(--rarity-epic); }
+.rarity-pill[data-rarity="Legendary"] { background: var(--rarity-legendary); }
+.rarity-pill[data-rarity="Mythic"] { background: var(--rarity-mythic); }
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.hero-name {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+}
+
+.reason-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.5rem 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--accent-cyan);
+}
+
+.reason-text {
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.scoring-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: rgba(0, 0, 0, 0.2);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+}
+
+.breakdown-title {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.location-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.meta-bullet {
+  color: var(--text-muted);
+}
+
+.action-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  background: rgba(255, 255, 255, 0.03);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+}
+
+.score-total {
+  text-align: center;
+}
+
+.score-num {
+  font-size: var(--text-4xl);
+  font-weight: 800;
+  color: var(--accent-cyan);
+  font-family: var(--font-family-mono);
+  line-height: 1;
+}
+
+.score-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
