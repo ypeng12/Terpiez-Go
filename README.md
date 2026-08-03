@@ -1,3 +1,15 @@
+---
+title: Terpiez Go - Twitch & Roblox Discovery Engine
+emoji: 🎮
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+short_description: Terpiez-Go Roblox & Twitch Discovery Engine Web App
+---
+
+
+
 # Terpiez AR Game
 
 ## Overview
