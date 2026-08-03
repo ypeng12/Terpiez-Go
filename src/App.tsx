@@ -43,6 +43,9 @@ import {
   Box,
   PlusCircle,
   Users,
+  Play,
+  Pause,
+  Database,
 } from 'lucide-react';
 import './styles/global.css';
 import './App.css';
@@ -134,6 +137,9 @@ const AppContent: React.FC = () => {
   const [gamepadConnected, setGamepadConnected] = useState(false);
   const [gamepadName, setGamepadName] = useState('');
 
+  // Auto-Walk Patrol State (自动漫游巡航)
+  const [isAutoWalking, setIsAutoWalking] = useState(false);
+
   // Weather & Time Engine State
   const [currentWeather, setCurrentWeather] = useState<WeatherCondition>('Sunny');
 
@@ -181,6 +187,21 @@ const AppContent: React.FC = () => {
       return parseFloat(nextLng.toFixed(5));
     });
   }, []);
+
+  // Auto-Walk Patrol Loop (自动巡航移动)
+  useEffect(() => {
+    if (!isAutoWalking || activeNav !== 'nearby_map') return;
+
+    const directions: ('N' | 'E' | 'S' | 'W')[] = ['N', 'E', 'N', 'E', 'S', 'W', 'S', 'W'];
+    let stepIdx = 0;
+
+    const timer = setInterval(() => {
+      movePlayer(directions[stepIdx % directions.length]);
+      stepIdx++;
+    }, 1200);
+
+    return () => clearInterval(timer);
+  }, [isAutoWalking, activeNav, movePlayer]);
 
   // Keyboard Movement Listener (WASD / Arrow Keys)
   useEffect(() => {
@@ -288,6 +309,19 @@ const AppContent: React.FC = () => {
       type: 'info',
       title: `${config.iconEmoji} Weather Changed: ${weather}`,
       message: config.description,
+    });
+  };
+
+  // Toggle Auto Walk
+  const handleToggleAutoWalk = () => {
+    setIsAutoWalking((prev) => {
+      const nextState = !prev;
+      addToast({
+        type: 'info',
+        title: nextState ? '🤖 Auto-Patrol Walking Active' : '⏸️ Auto-Patrol Paused',
+        message: nextState ? 'Player is exploring surrounding Uber H3 cells automatically.' : 'Switched back to manual movement.',
+      });
+      return nextState;
     });
   };
 
@@ -527,11 +561,20 @@ const AppContent: React.FC = () => {
           <div className="map-view-container glass-panel">
             <div className="map-header">
               <div className="map-title-box">
-                <h2><MapPin color="var(--accent-cyan)" /> Uber H3 Hexagonal Spatial & 3D Map Engine</h2>
-                <p>Coordinates: Lat {userLat.toFixed(4)}, Lng {userLng.toFixed(4)} | Use WASD / Arrow Keys or Xbox Controller to explore!</p>
+                <h2><MapPin color="var(--accent-cyan)" /> Uber H3 Spatial & 3D Map Engine</h2>
+                <p>Coordinates: Lat {userLat.toFixed(4)}, Lng {userLng.toFixed(4)} | Use WASD / Gamepad / Auto-Walk Patrol!</p>
               </div>
 
               <div className="map-controls-toolbar">
+                {/* Auto-Walk Patrol Button */}
+                <button
+                  className={`autowalk-btn ${isAutoWalking ? 'active' : ''}`}
+                  onClick={handleToggleAutoWalk}
+                >
+                  {isAutoWalking ? <Pause size={14} /> : <Play size={14} />}
+                  <span>{isAutoWalking ? '⏸️ Pause Auto-Patrol' : '▶️ Auto-Walk / Patrol'}</span>
+                </button>
+
                 {/* Weather Bar Controls */}
                 <div className="weather-control-bar">
                   <CloudRain size={16} color="#38bdf8" />
@@ -589,6 +632,21 @@ const AppContent: React.FC = () => {
             ) : (
               /* 2D LEAFLET H3 GRID MAP VIEW */
               <div className="leaflet-wrapper">
+                {/* H3 Spatial Grid Inspector Floating Panel Overlay */}
+                <div className="h3-inspector-panel">
+                  <div className="h3-panel-header">
+                    <Hexagon size={18} /> Uber H3 Spatial Grid Inspector
+                  </div>
+                  <div className="h3-panel-body">
+                    <p>Current H3 Cell: <span className="h3-panel-cell-id">{playerH3Index}</span></p>
+                    <p>Grid Resolution: <strong>9 (~100m hex)</strong></p>
+                    <p>Active K-Ring Neighbors: <strong>{surroundingH3Cells.length} Hex Cells</strong></p>
+                    <p style={{ marginTop: '4px', color: '#4ade80', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Database size={12} /> Embedded State (Zero Redis Lock)
+                    </p>
+                  </div>
+                </div>
+
                 {inRangeTerpiez && (
                   <div className="map-proximity-alert animate-glow">
                     <Zap size={18} />

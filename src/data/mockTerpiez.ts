@@ -23,12 +23,12 @@ const generateTerpiezSvg = (_type: string, color1: string, color2: string, emoji
 export const INITIAL_TERPIEZ: Terpiez[] = [
   {
     id: 'terpiez-01',
-    name: 'HydroShell',
+    name: 'HydroShell (AquaDude)',
     speciesNumber: 1,
     type: 'Water',
     rarity: 'Common',
-    description: 'A nimble aquatic shell Terpiez that loves sunny fountains at McKeldin Mall.',
-    imageUrl: generateTerpiezSvg('Water', '#38bdf8', '#1e40af', '🐢'),
+    description: 'A nimble aquatic shell Terpiez that loves sunny fountains at McKeldin Mall. (Original Flutter Asset)',
+    imageUrl: '/aquadude.png',
     attack: 48,
     defense: 65,
     speed: 52,
