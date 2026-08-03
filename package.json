@@ -12,11 +12,13 @@
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
+    "h3-js": "^4.5.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-leaflet": "^4.2.1"
+    "react-leaflet": "^4.2.1",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
@@ -24,6 +26,7 @@
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
+    "@types/three": "^0.185.3",
     "@vitejs/plugin-react": "^4.2.1",
     "jsdom": "^24.0.0",
     "typescript": "^5.2.2",
